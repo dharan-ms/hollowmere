@@ -1,0 +1,4 @@
+{
+  "summary": "Built Hollowmere as a single index.html: five full-bleed scenes joined by transparent rock-seam bands, embedded Oswald and Inter WOFF2, and vanilla canvas motion for falls, lava, particles, ghosts, bats, eased scroll, and the load intro. Verified at 1440x810 and a 390px phone width: hero title and subtitle frame the moon, seams carry the ghost-light falls, section copy rises in place, and the page ends on the lantern lake.",
+  "current_status": "The one-file Hollowmere descent page is in index.html and checked in the browser across the hero, crypt, mill, foundry, and finale, plus the phone layout. No further build steps are pending."
+}

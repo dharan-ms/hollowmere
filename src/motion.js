@@ -1,4 +1,28 @@
-(function () {
+export function mountHollowmere() {
+  let alive = true;
+  let raf = 0;
+  let splitTimer = 0;
+  const cleanups = [];
+  const timers = [];
+  function on(target, type, fn, opts) {
+    target.addEventListener(type, fn, opts);
+    cleanups.push(function () { target.removeEventListener(type, fn, opts); });
+  }
+  function later(fn, ms) {
+    const id = setTimeout(fn, ms);
+    timers.push(id);
+  }
+  function stop() {
+    alive = false;
+    cancelAnimationFrame(raf);
+    clearTimeout(splitTimer);
+    timers.forEach(clearTimeout);
+    cleanups.forEach(function (fn) { fn(); });
+    if (typeof document.getAnimations === 'function') {
+      document.getAnimations().forEach(function (a) { a.cancel(); });
+    }
+  }
+
   const EASE = 'cubic-bezier(.2,.8,.2,1)';
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const fine = matchMedia('(pointer: fine)').matches;
@@ -40,7 +64,7 @@
     return y;
   }
 
-  document.addEventListener('click', function (e) {
+  on(document, 'click', function (e) {
     const a = e.target.closest('a[href^="#"]');
     if (!a) return;
     const id = a.getAttribute('href').slice(1);
@@ -153,20 +177,21 @@
       [{ transform: 'translateY(-100%)' }, { transform: 'translateY(0)' }],
       { duration: 900, delay: 500, easing: EASE, fill: 'forwards' }
     );
-    setTimeout(function () {
+    later(function () {
+      if (!alive) return;
       title.querySelectorAll('.ch').forEach(function (ch) { ch.style.overflow = 'visible'; });
     }, 250 + 9 * 70 + 1200);
   }
 
   function bootCopy() {
+    if (!alive) return;
     splitAll();
     checkReveals();
   }
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(bootCopy);
   else bootCopy();
 
-  let splitTimer = 0;
-  addEventListener('resize', function () {
+  on(window, 'resize', function () {
     clearTimeout(splitTimer);
     splitTimer = setTimeout(function () { splitAll(); checkReveals(); }, 160);
   });
@@ -483,7 +508,7 @@
     }
   }
 
-  addEventListener('pointermove', function (e) {
+  on(window, 'pointermove', function (e) {
     mx = e.clientX;
     my = e.clientY;
     if (!moved) {
@@ -512,17 +537,18 @@
     }
     applyReduced();
     paint(0, 0, false);
-    addEventListener('scroll', applyReduced, { passive: true });
-    addEventListener('resize', function () {
+    on(window, 'scroll', applyReduced, { passive: true });
+    on(window, 'resize', function () {
       layout();
       refitAll();
       paint(0, 0, false);
       applyReduced();
     });
-    return;
+    return stop;
   }
 
   function frame(now) {
+    if (!alive) return;
     const dt = Math.min(0.05, (now - last) / 1000);
     last = now;
     const target = window.scrollY;
@@ -534,12 +560,13 @@
     const t = (now - t0) / 1000;
     refitAll();
     paint(t, dt, true);
-    requestAnimationFrame(frame);
+    raf = requestAnimationFrame(frame);
   }
-  requestAnimationFrame(frame);
+  raf = requestAnimationFrame(frame);
 
-  addEventListener('resize', function () {
+  on(window, 'resize', function () {
     layout();
     refitAll();
   });
-})();
+  return stop;
+}

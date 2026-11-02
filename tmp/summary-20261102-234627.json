@@ -1,0 +1,4 @@
+{
+  "summary": "Converted Hollowmere from one HTML file into a Vite React app. Markup is in src/App.jsx, canvas and scroll motion in src/motion.js, styles in src/styles.css, and Oswald and Inter are WOFF2 files. The production build succeeded and the dev server shows the same five-scene descent.",
+  "current_status": "Hollowmere runs as a React app. npm run dev serves it at http://127.0.0.1:5173/. The scenes, seams, and motion match the previous page."
+}
